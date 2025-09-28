@@ -19,8 +19,7 @@ def download_file(download_url, feed_pref_id=0, site_name="unknown", directory="
     """
     try:
         # ファイルをダウンロード
-        dl_url = download_url
-        file_response = requests.get(dl_url)
+        file_response = requests.get(download_url)
         file_response.raise_for_status()
 
         # ダウンロード先のファイル名を取得して保存
@@ -39,12 +38,11 @@ def download_file(download_url, feed_pref_id=0, site_name="unknown", directory="
         print(f"ファイルを保存しました: {filename}\n")
         with open(f"{directory}/download_log.txt", "a") as log_file:
             log_file.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')},{filename},{download_url}\n")
-
     except requests.exceptions.RequestException as e:
         print(f"ファイルのダウンロードに失敗しました: {e}\n")
     time.sleep(random.uniform(2, 3))  # APIへの負荷を避けるために少し待機
 
-def one_page_download(href, feed_pref_id, search_class=None, search_prefix=None, search_suffix=None, site_name="unknown"):
+def one_page_download(href, feed_pref_id, search_class=None, search_prefix=None, search_suffix=None, site_name="unknown", enable_multiple=False):
     """
     ページからGTFSファイルをダウンロードする
     """
@@ -72,7 +70,8 @@ def one_page_download(href, feed_pref_id, search_class=None, search_prefix=None,
                 elif not download_url.startswith("http"):
                     download_url = urljoin(href, download_url)
                 download_file(download_url, feed_pref_id=feed_pref_id, site_name=site_name)
-                break  # 最初のダウンロードリンクだけ処理                   
+                if not enable_multiple:
+                    break  # 最初のダウンロードリンクだけ処理                   
     except Exception as e:
         print(f"Error processing {href}: {str(e)}")
 
@@ -107,3 +106,15 @@ def two_page_download(href, feed_pref_id, search_class=[None, None], search_pref
                 break  # 最初の.zipリンクだけ処理                   
     except Exception as e:
         print(f"Error processing {href}: {str(e)}")
+
+def wget_download_file(download_url, feed_pref_id=0, site_name="unknown", directory="gtfs_data"):
+    """
+    wgetを使用してファイルをダウンロードする
+    """
+    os.makedirs(directory, exist_ok=True)
+    filename = f"{feed_pref_id:02}_{site_name}_{os.path.basename(download_url)}"
+    command = f"wget -O {directory}/{filename} {download_url}"
+    os.system(command)
+    print(f"ファイルを保存しました: {filename}\n")
+    with open(f"{directory}/download_log.txt", "a") as log_file:
+        log_file.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')},{filename},{download_url}\n")

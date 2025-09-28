@@ -8,7 +8,8 @@ import random
 from utility import (
     download_file,
     one_page_download,
-    two_page_download
+    two_page_download,
+    wget_download_file
 )
 from gtfs_data_jp_download import gtfs_data_jp_download
 from pref_47_download import ottop_download
@@ -129,7 +130,77 @@ def main():
             # 以下の期間限定ファイル以外はgtfs-data.jpからの取得
             download_file("https://www.pref.kochi.lg.jp/opendata/bosai_anzen_machizukuri/file_contents/GTFS-MonobeDMO_Bus.zip", feed_pref_id=pref_id, site_name="kochi")
             continue
+        if href.startswith("https://www.city.mutsu.lg.jp/kurashi/koutsu/businfoformat/"):
+            one_page_download(href, feed_pref_id=pref_id, search_class=None, search_prefix=None, search_suffix=".zip", site_name="mutsu")
+            continue
+        if href.startswith("https://www.city.yatsushiro.lg.jp/"):
+            one_page_download(href, feed_pref_id=pref_id, search_class=None, search_prefix=None, search_suffix=".zip", site_name="yatsushiro")
+            continue
+        if (href.startswith("https://km.bus-vision.jp/")
+            or href.startswith("https://mc.bus-vision.jp/")
+            or href.startswith("https://loc.bus-vision.jp/")
+            or href.startswith("http://bus-vision.jp/")):
+            one_page_download(href, feed_pref_id=pref_id, search_class=None, search_prefix=None, search_suffix="gtfsFeed", site_name="bus-vision", enable_multiple=True)
+            continue
+        if href.startswith("https://yamaguchi-opendata.jp/ckan/dataset/352080-gtfsjp"):
+            wget_download_file("https://yamaguchi-opendata.jp/ckan/dataset/2dbaeb43-5134-4880-90a3-62870504f1d3/resource/0293f992-9abe-42ad-bf88-e5b287280072/download/352080gtfs-jp.zip",
+                          feed_pref_id=pref_id, site_name="yamaguchi")
+            continue
+        if href.startswith("https://yamaguchi-opendata.jp/ckan/dataset/352101_kotsu001"):
+            wget_download_file("https://yamaguchi-opendata.jp/ckan/dataset/db885818-b1bd-4848-986f-45119e8acb31/resource/c804039c-7d37-4e45-9288-f09fc1bbd249/download/hikari_gtfs_20250401_.zip",
+                          feed_pref_id=pref_id, site_name="yamaguchi")
+            continue
+        if href.startswith("https://www.keneibus.jp/local/OpenData/"):
+            one_page_download(href, feed_pref_id=pref_id, search_class="icon-zip", search_prefix=None, search_suffix=".zip", site_name="keneibus")
+            continue
+        if href.startswith("https://ckan.open-governmentdata.org/dataset"):
+            wget_download_file("https://ckan.open-governmentdata.org/dataset/57a14e0e-1778-439b-bd9e-4ad4ca1d8efb/resource/0ab0534b-4cf5-4c94-98b4-b1982275825d/download/403491_fureaibus_gtfs_20250401.zip",
+                          feed_pref_id=pref_id, site_name="open-governmentdata")
+            continue
+        if (href.startswith("https://www.city.komaki.aichi.jp/admin/soshiki/toshiseisakubu/") or
+            href.startswith("https://www.city.kiyosu.aichi.jp/kurashi_joho/seikatsu_kankyo/")
+        ):
+            # GTFSデータが見つからない
+            continue
+        if (href.startswith("https://www.city.obu.aichi.jp/kurashi/sumai/bus/") or
+            href.startswith("https://www.city.inuyama.aichi.jp/shisei/toukei/")
+        ):
+            one_page_download(href, feed_pref_id=pref_id, search_class=None, search_prefix=None, search_suffix=".zip", site_name="aichi")
+            continue
+        if (href.startswith("https://www.city.ichinomiya.aichi.jp/machidukuri/chiikikoutsuu/")):
+            one_page_download(href, feed_pref_id=pref_id, search_class="ga-opd", search_prefix=None, search_suffix=".zip", site_name="aichi")
+            continue
 
+        if (href.startswith("https://www.town.aichi-togo.lg.jp/soshikikarasagasu/johokohoka/gyomuannai/")):
+            one_page_download(href, feed_pref_id=pref_id, search_class="icon2", search_prefix=None, search_suffix=".zip", site_name="aichi")
+            continue
+        if href.startswith("https://www.city.inazawa.aichi.jp/"):
+            one_page_download("https://www.city.inazawa.aichi.jp/0000004849.html", feed_pref_id=pref_id, search_class=None, search_prefix=None, search_suffix=".zip", site_name="aichi")
+            continue
+        if href.startswith("http://opendata.sagabus.info/"):
+            download_file("http://opendata.sagabus.info/saga-current.zip", feed_pref_id=pref_id, site_name="sagabus")
+            continue
+        if href.startswith("https://www.km-bus.tokyo/route/odaiba/"):
+            one_page_download(href, feed_pref_id=pref_id, search_class=None, search_prefix=None, search_suffix=".zip", site_name="km-bus")
+            continue
+        if href.startswith("https://bus.fujikyu.co.jp/rosen/gtfs"):
+            wget_download_file("https://gtfs-jp.buskita.com/fxc/gtfs.zip", feed_pref_id=pref_id, site_name="fujikyu_fxc")
+            wget_download_file("https://gtfs-jp.buskita.com/fmo_shonan/gtfs.zip", feed_pref_id=pref_id, site_name="fujikyu_fmo_shonan")
+            wget_download_file("https://gtfs-jp.buskita.com/fmo/gtfs.zip", feed_pref_id=pref_id, site_name="fujikyu_fmo")
+            wget_download_file("https://gtfs-jp.buskita.com/fjb/gtfs.zip", feed_pref_id=pref_id, site_name="fujikyu_fjb")
+            continue
+        if href.startswith("https://www.city.ozu.ehime.jp/site/opendata/"):
+            one_page_download(href, feed_pref_id=pref_id, search_class=None, search_prefix=None, search_suffix=".zip", site_name="ozu")
+            continue
+        if href.startswith("https://www.town.shodoshima.lg.jp/gyousei/choseijoho/opendeta/"):
+            one_page_download(href, feed_pref_id=pref_id, search_class="icon2", search_prefix=None, search_suffix=".zip", site_name="shodoshima")
+            continue
+        if href.startswith("https://opendata.pref.kagawa.lg.jp/dataset/"):
+            one_page_download(href, feed_pref_id=pref_id, search_class="download", search_prefix=None, search_suffix=".zip", site_name="kagawa")
+            continue
+        if href.startswith("https://opendata.pref.tokushima.lg.jp/dataset/"):
+            one_page_download(href, feed_pref_id=pref_id, search_class="download", search_prefix=None, search_suffix="source-url", site_name="tokushima")
+            continue
         print(f"href: {href}, pref_id: {pref_id}")
 
 if __name__ == "__main__":

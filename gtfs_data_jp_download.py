@@ -48,23 +48,8 @@ def gtfs_data_jp_download():
         print(f"フィード名      : {feed_name}")
 
         try:
-            # ファイルをダウンロード
             dl_url = download_url.format(feed_id=feed_id, organization_id=organization_id)
-
             download_file(dl_url, feed_pref_id=feed_pref_id, site_name="gtfs-data", directory=download_dir)
-            # file_response = requests.get(dl_url)
-            # file_response.raise_for_status()
-
-            # # ダウンロード先のファイル名を取得して保存
-            # content_disposition = file_response.headers.get("Content-Disposition")
-            # if content_disposition:
-            #     filename = content_disposition.split("filename=")[-1].strip('"')
-            #     filename = f'{feed_pref_id:02}_{filename}'
-            # else:
-            #     filename = f"{feed_pref_id:02}_{organization_id}_{feed_id}.zip"
-            # with open(f"{download_dir}/{filename}", "wb") as file:
-            #     file.write(file_response.content)
-            # print(f"ファイルを保存しました: {filename}\n")
         except requests.exceptions.RequestException as e:
             print(f"ファイルのダウンロードに失敗しました: {e}\n")
         # time.sleep(random.uniform(2, 3))  # APIへの負荷を避けるために少し待機
