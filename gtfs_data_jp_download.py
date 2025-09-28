@@ -2,8 +2,9 @@ import time
 import random
 import requests
 import json
+from utility import download_file
 
-def fetch_japan_bus_gtfs_feeds():
+def gtfs_data_jp_download():
     feed_url = "https://api.gtfs-data.jp/v2/feeds"
     download_url = 'https://api.gtfs-data.jp/v2/organizations/{organization_id}/feeds/{feed_id}/files/feed.zip'
     download_dir = "./gtfs_data"
@@ -49,22 +50,24 @@ def fetch_japan_bus_gtfs_feeds():
         try:
             # ファイルをダウンロード
             dl_url = download_url.format(feed_id=feed_id, organization_id=organization_id)
-            file_response = requests.get(dl_url)
-            file_response.raise_for_status()
 
-            # ダウンロード先のファイル名を取得して保存
-            content_disposition = file_response.headers.get("Content-Disposition")
-            if content_disposition:
-                filename = content_disposition.split("filename=")[-1].strip('"')
-                filename = f'{feed_pref_id:02}_{filename}'
-            else:
-                filename = f"{feed_pref_id:02}_{organization_id}_{feed_id}.zip"
-            with open(f"{download_dir}/{filename}", "wb") as file:
-                file.write(file_response.content)
-            print(f"ファイルを保存しました: {filename}\n")
+            download_file(dl_url, feed_pref_id=feed_pref_id, site_name="gtfs-data", directory=download_dir)
+            # file_response = requests.get(dl_url)
+            # file_response.raise_for_status()
+
+            # # ダウンロード先のファイル名を取得して保存
+            # content_disposition = file_response.headers.get("Content-Disposition")
+            # if content_disposition:
+            #     filename = content_disposition.split("filename=")[-1].strip('"')
+            #     filename = f'{feed_pref_id:02}_{filename}'
+            # else:
+            #     filename = f"{feed_pref_id:02}_{organization_id}_{feed_id}.zip"
+            # with open(f"{download_dir}/{filename}", "wb") as file:
+            #     file.write(file_response.content)
+            # print(f"ファイルを保存しました: {filename}\n")
         except requests.exceptions.RequestException as e:
             print(f"ファイルのダウンロードに失敗しました: {e}\n")
-        time.sleep(random.uniform(2, 3))  # APIへの負荷を避けるために少し待機
+        # time.sleep(random.uniform(2, 3))  # APIへの負荷を避けるために少し待機
 
 if __name__ == "__main__":
-    fetch_japan_bus_gtfs_feeds()
+    gtfs_data_jp_download()
