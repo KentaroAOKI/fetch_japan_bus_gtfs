@@ -2,7 +2,7 @@ import json
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
-from .utility import download_file
+from utility import download_file
 
 def ottop_download(href, feed_pref_id):
     """

@@ -37,6 +37,9 @@ def download_file(download_url, feed_pref_id=0, site_name="unknown", directory="
         with open(f"{directory}/{filename}", "wb") as file:
             file.write(file_response.content)
         print(f"ファイルを保存しました: {filename}\n")
+        with open(f"{directory}/download_log.txt", "a") as log_file:
+            log_file.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')},{filename},{download_url}\n")
+
     except requests.exceptions.RequestException as e:
         print(f"ファイルのダウンロードに失敗しました: {e}\n")
     time.sleep(random.uniform(2, 3))  # APIへの負荷を避けるために少し待機

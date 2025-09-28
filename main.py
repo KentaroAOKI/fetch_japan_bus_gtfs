@@ -10,6 +10,8 @@ from utility import (
     one_page_download,
     two_page_download
 )
+from gtfs_data_jp_download import gtfs_data_jp_download
+from pref_47_download import ottop_download
 
 def main():
     # 保存先ディレクトリを作成
@@ -62,58 +64,70 @@ def main():
         seen.add(href)
         unique_links.append({"href": href, "kid": pref_id})
 
+    call_counter = {}
     for link in unique_links:
         href = link["href"]
         pref_id = link["kid"]
         if href.startswith("./gtfs_list.php"):
             continue
         if href.startswith("https://gtfs-data.jp/search?"):
+            call_key = "https://gtfs-data.jp/search?"
+            if call_key not in call_counter:
+                gtfs_data_jp_download()
+                call_counter[call_key] = 0
+            call_counter[call_key] += 1
             continue
         if href.startswith("https://ckan.hoda.jp/dataset/"):
-            # one_page_download(href, feed_pref_id=pref_id, search_class="resource-url-analytics", search_prefix=None, search_suffix=".zip", site_name="hoda")
+            one_page_download(href, feed_pref_id=pref_id, search_class="resource-url-analytics", search_prefix=None, search_suffix=".zip", site_name="hoda")
             continue
         if href.startswith("https://data.bodik.jp/dataset/"):
-            # two_page_download(
-            #     href,
-            #     feed_pref_id=pref_id, 
-            #     search_class=["heading", "resource-url-analytics"],
-            #     search_prefix=["/dataset/", "/dataset/"],
-            #     search_suffix=[None, None],
-            #     site_name="bodik")
+            two_page_download(
+                href,
+                feed_pref_id=pref_id, 
+                search_class=["heading", "resource-url-analytics"],
+                search_prefix=["/dataset/", "/dataset/"],
+                search_suffix=[None, None],
+                site_name="bodik")
             continue
         if href.startswith("https://www.city.iyo.lg.jp/"):
-            # download_file("https://www.city.iyo.lg.jp/keizaikoyou/matidukuri/documents/agency.zip", feed_pref_id=pref_id, site_name="iyo")
+            download_file("https://www.city.iyo.lg.jp/keizaikoyou/matidukuri/documents/agency.zip", feed_pref_id=pref_id, site_name="iyo")
             continue
         if href.startswith("https://www.ottop.org/opendata-feed"):
-            # ottop_download(href, feed_pref_id=pref_id)
+            call_key = "https://www.ottop.org/opendata-feed"
+            if call_key not in call_counter:
+                ottop_download(href, feed_pref_id=pref_id)
+                call_counter[call_key] = 0
             continue
         if href.startswith("https://opendata.pref.saitama.lg.jp/datasets/"):
-            # two_page_download(
-            #     href,
-            #     feed_pref_id=pref_id, 
-            #     search_class=["is-resource", "c-btn c-btn-solid c-btn-sm"],
-            #     search_prefix=["https://opendata.pref.saitama.lg.jp/resources/", "https://opendata.pref.saitama.lg.jp/resource_download/"],
-            #     search_suffix=[None, None],
-            #     site_name="saitama")
+            two_page_download(
+                href,
+                feed_pref_id=pref_id, 
+                search_class=["is-resource", "c-btn c-btn-solid c-btn-sm"],
+                search_prefix=["https://opendata.pref.saitama.lg.jp/resources/", "https://opendata.pref.saitama.lg.jp/resource_download/"],
+                search_suffix=[None, None],
+                site_name="saitama")
             continue
         if href.startswith("https://www.akita-bus.or.jp/pages/"):
-            # one_page_download(href, feed_pref_id=pref_id, search_class=None, search_prefix=None, search_suffix=".zip", site_name="akitabus")
+            one_page_download(href, feed_pref_id=pref_id, search_class=None, search_prefix=None, search_suffix=".zip", site_name="akitabus")
             continue
         if href.startswith("https://ckan.odpt.org/dataset/"):
-            # two_page_download(
-            #     href,
-            #     feed_pref_id=pref_id, 
-            #     search_class=["heading", "resource-url-analytics"],
-            #     search_prefix=["/dataset/", "https://api-public.odpt.org/api/v4/files/odpt/"],
-            #     search_suffix=[None, None],
-            #     site_name=f"odpt_{href.split('/')[-1]}")
+            two_page_download(
+                href,
+                feed_pref_id=pref_id, 
+                search_class=["heading", "resource-url-analytics"],
+                search_prefix=["/dataset/", "https://api-public.odpt.org/api/v4/files/odpt/"],
+                search_suffix=[None, None],
+                site_name=f"odpt_{href.split('/')[-1]}")
             continue
         if href.startswith("https://www.kotoden.co.jp/") or href.startswith("http://www.kotoden.co.jp/"):
-            # download_file("https://www.kotoden.co.jp/publichtm/gtfs/gtfsdata/latest/gtfs_kb.zip", feed_pref_id=pref_id, site_name="kotoden_bus")
+            call_key = "https://www.kotoden.co.jp/"
+            if call_key not in call_counter:
+                download_file("https://www.kotoden.co.jp/publichtm/gtfs/gtfsdata/latest/gtfs_kb.zip", feed_pref_id=pref_id, site_name="kotoden_bus")
+                call_counter[call_key] = 0
             continue
         if href.startswith("https://www.pref.kochi.lg.jp/opendata/bosai_anzen_machizukuri/"):
             # 以下の期間限定ファイル以外はgtfs-data.jpからの取得
-            # download_file("https://www.pref.kochi.lg.jp/opendata/bosai_anzen_machizukuri/file_contents/GTFS-MonobeDMO_Bus.zip", feed_pref_id=pref_id, site_name="kochi")
+            download_file("https://www.pref.kochi.lg.jp/opendata/bosai_anzen_machizukuri/file_contents/GTFS-MonobeDMO_Bus.zip", feed_pref_id=pref_id, site_name="kochi")
             continue
 
         print(f"href: {href}, pref_id: {pref_id}")
