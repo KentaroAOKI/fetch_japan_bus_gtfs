@@ -42,21 +42,35 @@ def download_file(download_url, feed_pref_id=0, site_name="unknown", directory="
         print(f"ファイルのダウンロードに失敗しました: {e}\n")
     time.sleep(random.uniform(2, 3))  # APIへの負荷を避けるために少し待機
 
-def one_page_download(href, feed_pref_id, search_class=None, search_prefix=None, search_suffix=None, site_name="unknown", enable_multiple=False):
+def one_page_download(
+        href, 
+        feed_pref_id, 
+        search_class=None, 
+        search_prefix=None, 
+        search_suffix=None, 
+        site_name="unknown", 
+        enable_multiple=False,
+        search_contents=None, 
+        href_suffix=""):
     """
     ページからGTFSファイルをダウンロードする
     """
     try:
         print(f"Accessing: {href}")
         # ページのHTMLを取得
-        response = requests.get(href)
+        response = requests.get(href + href_suffix)
         response.encoding = response.apparent_encoding
         html = response.text
         # BeautifulSoupでパース
         soup = BeautifulSoup(html, "html.parser")
         # aタグを検索
-        download_links = soup.find_all("a", class_=search_class)
+        if search_class == None:
+            download_links = soup.find_all("a")
+        else:
+            download_links = soup.find_all("a", class_=search_class)
         for link in download_links:
+            if search_contents and link.contents != search_contents:
+                continue
             download_url = link.get("href")
             if download_url and (
                 (
@@ -75,34 +89,55 @@ def one_page_download(href, feed_pref_id, search_class=None, search_prefix=None,
     except Exception as e:
         print(f"Error processing {href}: {str(e)}")
 
-def two_page_download(href, feed_pref_id, search_class=[None, None], search_prefix=[None, None], search_suffix=[None, None], site_name="unknown"):
+def two_page_download(
+        href, 
+        feed_pref_id, 
+        search_class=[None, None], 
+        search_prefix=[None, None], 
+        search_suffix=[None, None], 
+        site_name="unknown", 
+        search_contents=[None, None], 
+        href_suffix=["", ""]):
     """
     opendata.pref.saitama.lg.jpのページからGTFSファイルをダウンロードする
     """
     try:
         print(f"Accessing: {href}")
         # ページのHTMLを取得
-        response = requests.get(href)
+        response = requests.get(href + href_suffix[0])
         response.encoding = response.apparent_encoding
         html = response.text
         # BeautifulSoupでパース
         soup = BeautifulSoup(html, "html.parser")
         # is-resourceクラスのaタグを検索
-        download_links = soup.find_all("a", class_=search_class[0])
+        if search_class[0] == None:
+            download_links = soup.find_all("a")
+        else:
+            download_links = soup.find_all("a", class_=search_class[0])
         for link in download_links:
+            if search_contents and search_contents[0] and link.contents != search_contents[0]:
+                continue
             download_url = link.get("href")
             if download_url and (
                 (
-                    search_prefix and download_url.startswith(search_prefix[0])
+                    search_prefix and search_prefix[0] and download_url.startswith(search_prefix[0])
                 ) or (
-                    search_suffix and download_url.endswith(search_suffix[0])
+                    search_suffix and search_suffix[0] and download_url.endswith(search_suffix[0])
                 )
             ):
                 if download_url.startswith("/"):
                     download_url = urljoin(href, download_url)
                 elif not download_url.startswith("http"):
                     download_url = urljoin(href, download_url)
-                one_page_download(download_url, feed_pref_id, search_class=search_class[1], search_prefix=search_prefix[1], search_suffix=search_suffix[1], site_name=site_name)
+                one_page_download(
+                    download_url, 
+                    feed_pref_id, 
+                    search_class=search_class[1], 
+                    search_prefix=search_prefix[1], 
+                    search_suffix=search_suffix[1], 
+                    site_name=site_name,
+                    search_contents=search_contents[1],
+                    href_suffix=href_suffix[1])
                 break  # 最初の.zipリンクだけ処理                   
     except Exception as e:
         print(f"Error processing {href}: {str(e)}")
@@ -114,7 +149,7 @@ def wget_download_file(download_url, feed_pref_id=0, site_name="unknown", direct
     os.makedirs(directory, exist_ok=True)
     filename = f"{feed_pref_id:02}_{site_name}_{os.path.basename(download_url)}"
     command = f"wget -O {directory}/{filename} {download_url}"
-    os.system(command)
+    # os.system(command)
     print(f"ファイルを保存しました: {filename}\n")
     with open(f"{directory}/download_log.txt", "a") as log_file:
         log_file.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')},{filename},{download_url}\n")
